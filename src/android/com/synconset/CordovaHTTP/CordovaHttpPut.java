@@ -29,13 +29,14 @@ public class CordovaHttpPut extends CordovaHttp implements Runnable {
             this.setupSecurity(request);
             request.acceptCharset(CHARSET);
             request.headers(this.getHeaders());
-            request.form(this.getParams());
+			request.requestBody(this.getParams());
             int code = request.code();
             String body = request.body(CHARSET);
             JSONObject response = new JSONObject();
             response.put("status", code);
             if (code >= 200 && code < 300) {
                 response.put("data", body);
+				response.put("headers", request.jsonHeaders());
                 this.getCallbackContext().success(response);
             } else {
                 response.put("error", body);
@@ -49,7 +50,7 @@ public class CordovaHttpPut extends CordovaHttp implements Runnable {
             } else if (e.getCause() instanceof SSLHandshakeException) {
                 this.respondWithError("SSL handshake failed");
             } else {
-                this.respondWithError("There was an error with the request");
+                this.respondWithError("There was an error with the request: " + e.getMessage()); 
             }
         }
     }

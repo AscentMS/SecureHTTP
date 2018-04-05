@@ -73,6 +73,7 @@ public class CordovaHttpUpload extends CordovaHttp implements Runnable {
             response.put("status", code);
             if (code >= 200 && code < 300) {
                 response.put("data", body);
+				response.put("headers", request.jsonHeaders());
                 this.getCallbackContext().success(response);
             } else {
                 response.put("error", body);

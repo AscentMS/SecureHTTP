@@ -194,7 +194,13 @@ public class CordovaHttpPlugin extends CordovaPlugin {
 
         while(i.hasNext()) {
             String key = (String)i.next();
-            map.put(key, object.get(key));
+			Object value = object.get(key);
+
+			if (value.equals(JSONObject.NULL)) {
+				value = null;
+			}
+
+            map.put(key, value);
         }
         return map;
     }

@@ -91,6 +91,9 @@ import javax.net.ssl.TrustManager;
 import javax.net.ssl.TrustManagerFactory;
 import javax.net.ssl.X509TrustManager;
 
+import org.json.JSONObject;
+import org.json.JSONException;
+
 /**
  * A fluid interface for making HTTP requests using an underlying
  * {@link HttpURLConnection} (or sub-class).
@@ -2156,6 +2159,46 @@ public class HttpRequest {
     return getConnection().getHeaderFields();
   }
 
+  public JSONObject jsonHeaders() {
+	String jsonHeaders = "{";
+	Map<String, List<String>> headerMap = this.headers();
+	Iterator<Entry<String, List<String>>> it = headerMap.entrySet().iterator();
+	while (it.hasNext()) {
+		Entry<String, List<String>> e = it.next();
+
+		if (e.getKey() != "null") {
+			jsonHeaders += "\"" + e.getKey() + "\":\"";			
+					
+			Iterator<String> innerIt = e.getValue().iterator();
+			while (innerIt.hasNext()) {
+				String headerValue = innerIt.next();
+				
+				if (headerValue.contains("\"")) {
+					headerValue = headerValue.replaceAll("\\\"", "\\\\\"");
+				}
+				
+				jsonHeaders += headerValue;
+						
+				if (innerIt.hasNext()) {
+					jsonHeaders += "; ";
+				}
+			}
+					
+			jsonHeaders += "\"";
+					
+			if (it.hasNext()) {
+				jsonHeaders += ",";
+			}
+		}
+	}
+	jsonHeaders += "}";
+	try {
+		return new JSONObject(jsonHeaders);
+	} catch (JSONException e) {
+		return null;
+	}
+  }
+
   /**
    * Get a date header from the response falling back to returning -1 if the
    * header is missing or parsing fails
@@ -3206,6 +3249,51 @@ public class HttpRequest {
       for (Entry<?, ?> entry : values.entrySet())
         form(entry, charset);
     return this;
+  }
+  
+  public HttpRequest requestBody(final Map<?, ?> values, final String charset) throws HttpRequestException {
+	  if (!values.isEmpty()) {
+		  contentType(CONTENT_TYPE_JSON, charset);
+		  try {
+			  openOutput();
+			  output.write("{");
+			  boolean hasEntries = false;
+			  Iterator<?> entries = values.entrySet().iterator();
+			  while (entries.hasNext()) {
+				  Entry<?, ?> entry = (Entry<?, ?>) entries.next();
+				  if (entry.getKey() != null) {
+					  output.write("\"" + entry.getKey().toString().replace("\"", "\\\"")  + "\"");
+					  output.write(": ");
+					  if (entry.getValue() != null) {
+						  if (!entry.getValue().toString().startsWith("{") && !entry.getValue().toString().startsWith("[")) {
+							  output.write("\"");
+							  output.write(entry.getValue().toString().replace("\"", "\\\""));
+						  }
+						  else {
+							output.write(entry.getValue().toString());
+						  }
+						  if(!entry.getValue().toString().endsWith("}") && !entry.getValue().toString().endsWith("]")) {
+							  output.write("\"");
+						  }
+					  } else {
+						  output.write("null");
+					  }
+					  hasEntries = true;
+				  }
+				  if (entries.hasNext() && hasEntries) {
+					  output.write(", ");
+				  }
+			  }
+			  output.write("}");
+		  } catch (IOException e) {
+			  throw new HttpRequestException(e);
+		  }
+	  }
+	  return this;
+  }
+  
+  public HttpRequest requestBody(final Map<?, ?> values) throws HttpRequestException {
+    return requestBody(values, CHARSET_UTF8);
   }
   
   /**

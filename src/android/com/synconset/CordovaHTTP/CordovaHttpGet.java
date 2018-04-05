@@ -43,6 +43,7 @@ public class CordovaHttpGet extends CordovaHttp implements Runnable {
             response.put("status", code);
             if (code >= 200 && code < 300) {
                 response.put("data", body);
+				response.put("headers", request.jsonHeaders());
                 this.getCallbackContext().success(response);
             } else {
                 response.put("error", body);
@@ -56,7 +57,7 @@ public class CordovaHttpGet extends CordovaHttp implements Runnable {
             } else if (e.getCause() instanceof SSLHandshakeException) {
                 this.respondWithError("SSL handshake failed");
             } else {
-                this.respondWithError("There was an error with the request");
+                this.respondWithError("There was an error with the request: " + e.getMessage()); 
             }
         }
     }
