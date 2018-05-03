@@ -30,7 +30,10 @@ public class CordovaHttpUpload extends CordovaHttp implements Runnable {
     
     public CordovaHttpUpload(String urlString, Map<?, ?> params, Map<String, String> headers, CallbackContext callbackContext, String filePath, String name) {
         super(urlString, params, headers, callbackContext);
-        this.filePath = filePath.substring(0, filePath.indexOf('?'));
+        this.filePath = filePath;
+        if(filePath.indexOf('?') >= 0){                                     //Not all android filepaths have a querystring - photos taken directly from camera do not.
+            this.filePath = filePath.substring(0, filePath.indexOf('?'));
+        }
         this.name = name;
     }
     
