@@ -1,6 +1,6 @@
 {
   "name": "com.synconset.cordovaHTTP",
-  "version": "0.2.4",
+  "version": "0.2.5",
   "description": "\n        Cordova / Phonegap plugin for communicating with HTTP servers using SSL pinning\n\t",
   "cordova": {
     "id": "com.synconset.cordovaHTTP",
