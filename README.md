@@ -8,14 +8,18 @@ Cordova / Phonegap plugin for communicating with HTTP servers.  Supports iOS and
  - Background threading - all requests are done in a background thread.
  - SSL Pinning - read more at [LumberBlog](http://blog.lumberlabs.com/2012/04/why-app-developers-should-care-about.html).
 
+## Updates
+
+Please check [CHANGELOG.md](CHANGELOG.md) for details about updating to a new version.
+
 ## Installation
 
 The plugin conforms to the Cordova plugin specification, it can be installed
 using the Cordova / Phonegap command line interface.
 
-    phonegap plugin add https://github.com/wymsee/cordova-HTTP.git
+    phonegap plugin add cordova-plugin-http
 
-    cordova plugin add https://github.com/wymsee/cordova-HTTP.git
+    cordova plugin add cordova-plugin-http
 
 ## Usage
 
@@ -32,30 +36,31 @@ You can then inject the cordovaHTTP service into your controllers.  The function
 This plugin registers a `cordovaHTTP` global on window
 
 
-## Functions
+## Sync Functions
 
-All available functions are documented below.  Every function takes a success and error callback function as the last 2 arguments.
+### getBasicAuthHeader
+This returns an object representing a basic HTTP Authorization header of the form `{'Authorization': 'Basic base64encodedusernameandpassword'}`
+
+    var header = cordovaHTTP.getBasicAuthHeader("user", "password");
 
 ### useBasicAuth
 This sets up all future requests to use Basic HTTP authentication with the given username and password.
 
-    cordovaHTTP.useBasicAuth("user", "password", function() {
-        console.log('success!');
-    }, function() {
-        console.log('error :(');
-    });
+    cordovaHTTP.useBasicAuth("user", "password");
     
 ### setHeader
 Set a header for all future requests.  Takes a header and a value.
 
-    cordovaHTTP.setHeader("Header", "Value", function() {
-        console.log('success!');
-    }, function() {
-        console.log('error :(');
-    });
+    cordovaHTTP.setHeader("Header", "Value");
+    
+
+## Async Functions
+These functions all take success and error callbacks as their last 2 arguments.
 
 ### enableSSLPinning
-Enable or disable SSL pinning.  To use SSL pinning you must include at least one .cer SSL certificate in your app project.  You can pin to your server certificate or to one of the issuing CA certificates. For ios include your certificate in the root level of your bundle (just add the .cer file to your project/target at the root level).  For android include your certificate in your project's platforms/android/assets folder.  In both cases all .cer files found will be loaded automatically.  If you only have a .pem certificate see this [stackoverflow answer](http://stackoverflow.com/a/16583429/3182729).  You want to convert it to a DER encoded certificate with a .cer extension.
+Enable or disable SSL pinning.  This defaults to false.
+
+To use SSL pinning you must include at least one .cer SSL certificate in your app project.  You can pin to your server certificate or to one of the issuing CA certificates. For ios include your certificate in the root level of your bundle (just add the .cer file to your project/target at the root level).  For android include your certificate in your project's platforms/android/assets folder.  In both cases all .cer files found will be loaded automatically.  If you only have a .pem certificate see this [stackoverflow answer](http://stackoverflow.com/a/16583429/3182729).  You want to convert it to a DER encoded certificate with a .cer extension.
 
 As an alternative, you can store your .cer files in the www/certificates folder.
 
@@ -66,9 +71,18 @@ As an alternative, you can store your .cer files in the www/certificates folder.
     });
     
 ### acceptAllCerts
-Accept all SSL certificates.  Or disable accepting all certificates.
+Accept all SSL certificates.  Or disable accepting all certificates.  This defaults to false.
 
     cordovaHTTP.acceptAllCerts(true, function() {
+        console.log('success!');
+    }, function() {
+        console.log('error :(');
+    });
+    
+### validateDomainName
+Whether or not to validate the domain name in the certificate.  This defaults to true.
+
+    cordovaHTTP.validateDomainName(false, function() {
         console.log('success!');
     }, function() {
         console.log('error :(');
@@ -78,11 +92,14 @@ Accept all SSL certificates.  Or disable accepting all certificates.
 Execute a POST request.  Takes a URL, parameters, and headers.
 
 #### success
-The success function receives a response object with 2 properties: status and data.  Status is the HTTP response code and data is the response from the server as a string. Here's a quick example:
+The success function receives a response object with 3 properties: status, data, and headers.  Status is the HTTP response code. Data is the response from the server as a string. Headers is an object with the headers.  Here's a quick example:
 
     {
         status: 200,
-        data: "{'id': 12, 'message': 'test'}"
+        data: "{'id': 12, 'message': 'test'}",
+        headers: {
+            "Content-Length": "247"
+        }
     }
     
 Most apis will return JSON meaning you'll want to parse the data like in the example below:
@@ -110,11 +127,14 @@ Most apis will return JSON meaning you'll want to parse the data like in the exa
     
     
 #### failure
-The error function receives a response object with 2 properties: status and error.  Status is the HTTP response code.  Error is the error response from the server as a string.  Here's a quick example:
+The error function receives a response object with 3 properties: status, error and headers.  Status is the HTTP response code.  Error is the error response from the server as a string.  Headers is an object with the headers.  Here's a quick example:
 
     {
         status: 403,
-        error: "Permission denied"
+        error: "Permission denied",
+        headers: {
+            "Content-Length": "247"
+        }
     }
     
 ### get
@@ -167,16 +187,11 @@ This plugin utilizes some awesome open source networking libraries.  These are b
 
 We made a few modifications to http-request.  They can be found in a separate repo here: https://github.com/wymsee/http-request
 
-## Limitations
+## Cookies
 
-This plugin isn't equivalent to using XMLHttpRequest or Ajax calls in Javascript.
-For instance, the following features are currently not supported:
+- a cookie set by a request isn't sent in subsequent requests
 
-- cookies support (a cookie set by a request isn't sent in subsequent requests)
-- read content of error responses (only the HTTP status code and message are returned)
-- read returned HTTP headers (e.g. in case security tokens are returned as headers)
-
-Take this into account when using this plugin into your application.
+Take this into account when using this plugin in your application.
 
 ## License
 
