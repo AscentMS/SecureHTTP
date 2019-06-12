@@ -40,6 +40,7 @@ public class CordovaHttpPost extends CordovaHttp implements Runnable {
                 this.getCallbackContext().success(response);
             } else {
                 response.put("error", body);
+                response.put("headers", request.jsonHeaders());
                 this.getCallbackContext().error(response);
             }
         } catch (JSONException e) {

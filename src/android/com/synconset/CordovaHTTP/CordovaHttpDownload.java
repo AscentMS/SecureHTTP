@@ -51,6 +51,7 @@ public class CordovaHttpDownload extends CordovaHttp implements Runnable {
                 this.getCallbackContext().success(response);
             } else {
                 response.put("error", "There was an error downloading the file");
+                response.put("headers", request.jsonHeaders());
                 this.getCallbackContext().error(response);
             }
         } catch(URISyntaxException e) {
