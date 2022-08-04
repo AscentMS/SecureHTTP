@@ -3256,35 +3256,7 @@ public class HttpRequest {
 		  contentType(CONTENT_TYPE_JSON, charset);
 		  try {
 			  openOutput();
-			  output.write("{");
-			  boolean hasEntries = false;
-			  Iterator<?> entries = values.entrySet().iterator();
-			  while (entries.hasNext()) {
-				  Entry<?, ?> entry = (Entry<?, ?>) entries.next();
-				  if (entry.getKey() != null) {
-					  output.write("\"" + entry.getKey().toString().replace("\"", "\\\"")  + "\"");
-					  output.write(": ");
-					  if (entry.getValue() != null) {
-						  if (!entry.getValue().toString().startsWith("{") && !entry.getValue().toString().startsWith("[")) {
-							  output.write("\"");
-							  output.write(entry.getValue().toString().replace("\"", "\\\""));
-						  }
-						  else {
-							output.write(entry.getValue().toString());
-						  }
-						  if(!entry.getValue().toString().endsWith("}") && !entry.getValue().toString().endsWith("]")) {
-							  output.write("\"");
-						  }
-					  } else {
-						  output.write("null");
-					  }
-					  hasEntries = true;
-				  }
-				  if (entries.hasNext() && hasEntries) {
-					  output.write(", ");
-				  }
-			  }
-			  output.write("}");
+        output.write(new JSONObject(values).toString());
 		  } catch (IOException e) {
 			  throw new HttpRequestException(e);
 		  }
