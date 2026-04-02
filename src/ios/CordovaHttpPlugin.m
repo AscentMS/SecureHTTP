@@ -86,7 +86,6 @@
 
     if (enable) {
         [HttpManager sharedClient].securityPolicy = [AFSecurityPolicy policyWithPinningMode:AFSSLPinningModeCertificate];
-        [HttpManager sharedClient].securityPolicy.validatesCertificateChain = NO;
     } else {
         [HttpManager sharedClient].securityPolicy = [AFSecurityPolicy policyWithPinningMode:AFSSLPinningModeNone];
     }
@@ -127,7 +126,7 @@
         parameters = nil;
     }
    
-	[manager POST:url parameters:parameters success:^(NSURLSessionDataTask *task, id responseObject) {
+	[manager POST:url parameters:parameters headers:nil progress:nil success:^(NSURLSessionDataTask *task, id responseObject) {
 		NSMutableDictionary *dictionary = [NSMutableDictionary dictionary];
 		[dictionary setObject:[self statusCodeFromTask:task] forKey:@"status"];
 		[dictionary setObject:responseObject forKey:@"data"];
@@ -170,7 +169,7 @@
         parameters = nil;
     }
    
-	[manager GET:url parameters:parameters success:^(NSURLSessionDataTask *task, id responseObject) {
+	[manager GET:url parameters:parameters headers:nil progress:nil success:^(NSURLSessionDataTask *task, id responseObject) {
 		NSMutableDictionary *dictionary = [NSMutableDictionary dictionary];
 		[dictionary setObject:[self statusCodeFromTask:task] forKey:@"status"];
 		[dictionary setObject:responseObject forKey:@"data"];
@@ -213,7 +212,7 @@
         parameters = nil;
     }
 
-	[manager PUT:url parameters:parameters success:^(NSURLSessionDataTask *task, id responseObject) {
+	[manager PUT:url parameters:parameters headers:nil success:^(NSURLSessionDataTask *task, id responseObject) {
 		NSMutableDictionary *dictionary = [NSMutableDictionary dictionary];
 		[dictionary setObject:[self statusCodeFromTask:task] forKey:@"status"];
 		[dictionary setObject:responseObject forKey:@"data"];
@@ -258,7 +257,7 @@
         parameters = nil;
     }
 
-	[manager DELETE:url parameters:parameters success:^(NSURLSessionDataTask *task, id responseObject) {
+	[manager DELETE:url parameters:parameters headers:nil success:^(NSURLSessionDataTask *task, id responseObject) {
 		NSMutableDictionary *dictionary = [NSMutableDictionary dictionary];
 		[dictionary setObject:[self statusCodeFromTask:task] forKey:@"status"];
 		[dictionary setObject:responseObject forKey:@"data"];
@@ -307,7 +306,7 @@
         parameters = nil;
     }
 
-    [manager POST:url parameters:parameters constructingBodyWithBlock:^(id<AFMultipartFormData> formData) {
+    [manager POST:url parameters:parameters headers:nil constructingBodyWithBlock:^(id<AFMultipartFormData> formData) {
         NSError *error;
         [formData appendPartWithFileURL:fileURL name:name error:&error];
         if (error) {
@@ -318,7 +317,7 @@
             [weakSelf.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
             return;
         }
-    } success:^(NSURLSessionDataTask *task, id responseObject) {
+    } progress:nil success:^(NSURLSessionDataTask *task, id responseObject) {
         NSMutableDictionary *dictionary = [NSMutableDictionary dictionary];
         [dictionary setObject:[self statusCodeFromTask:task] forKey:@"status"];
 		[dictionary setObject:responseObject forKey:@"data"];
@@ -363,7 +362,7 @@
         parameters = nil;
     }
     
-    [manager GET:url parameters:parameters success:^(NSURLSessionDataTask *task, id responseObject) {
+    [manager GET:url parameters:parameters headers:nil progress:nil success:^(NSURLSessionDataTask *task, id responseObject) {
         /*
          *
          * Licensed to the Apache Software Foundation (ASF) under one
