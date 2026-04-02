@@ -37,7 +37,14 @@
         <header-file src="src/ios/TextResponseSerializer.h" />
         <source-file src="src/ios/TextResponseSerializer.m" />
 
-        <dependency id="cordova-plugin-afnetworking" />
+        <podspec>
+            <config>
+                <source url="https://cdn.cocoapods.org/" />
+            </config>
+            <pods>
+                <pod name="AFNetworking" spec="~> 3.2.1" />
+            </pods>
+        </podspec> 
 
         <framework src="SystemConfiguration.framework" />
         <framework src="Security.framework" />
