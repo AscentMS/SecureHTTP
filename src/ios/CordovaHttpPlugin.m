@@ -6,6 +6,10 @@
 @interface CordovaHttpPlugin()
 
 - (void)setRequestHeaders:(NSDictionary*)headers;
+- (NSHTTPURLResponse*)httpResponseFromTask:(NSURLSessionTask*)task;
+- (NSNumber*)statusCodeFromTask:(NSURLSessionTask*)task;
+- (NSDictionary*)headersFromTask:(NSURLSessionTask*)task;
+- (id)errorBodyFromError:(NSError*)error;
 
 @end
 
@@ -24,6 +28,37 @@
     [headers enumerateKeysAndObjectsUsingBlock:^(id key, id obj, BOOL *stop) {
         [[HttpManager sharedClient].requestSerializer setValue:obj forHTTPHeaderField:key];
     }];
+}
+
+- (NSHTTPURLResponse*)httpResponseFromTask:(NSURLSessionTask*)task {
+    if (task && [task.response isKindOfClass:[NSHTTPURLResponse class]]) {
+        return (NSHTTPURLResponse*)task.response;
+    }
+    return nil;
+}
+
+- (NSNumber*)statusCodeFromTask:(NSURLSessionTask*)task {
+    NSHTTPURLResponse *response = [self httpResponseFromTask:task];
+    return [NSNumber numberWithInteger:response ? response.statusCode : 0];
+}
+
+- (NSDictionary*)headersFromTask:(NSURLSessionTask*)task {
+    NSHTTPURLResponse *response = [self httpResponseFromTask:task];
+    return response ? response.allHeaderFields : @{};
+}
+
+- (id)errorBodyFromError:(NSError*)error {
+    NSData *responseData = error.userInfo[AFNetworkingOperationFailingURLResponseDataErrorKey];
+    if (![responseData isKindOfClass:[NSData class]] || responseData.length == 0) {
+        return nil;
+    }
+
+    NSString *responseText = [[NSString alloc] initWithData:responseData encoding:NSUTF8StringEncoding];
+    if (responseText.length > 0) {
+        return responseText;
+    }
+
+    return nil;
 }
 
 - (void)useBasicAuth:(CDVInvokedUrlCommand*)command {
@@ -92,18 +127,18 @@
         parameters = nil;
     }
    
-	[manager POST:url parameters:parameters success:^(AFHTTPRequestOperation *operation, id responseObject) {
+	[manager POST:url parameters:parameters success:^(NSURLSessionDataTask *task, id responseObject) {
 		NSMutableDictionary *dictionary = [NSMutableDictionary dictionary];
-		[dictionary setObject:[NSNumber numberWithInt:operation.response.statusCode] forKey:@"status"];
+		[dictionary setObject:[self statusCodeFromTask:task] forKey:@"status"];
 		[dictionary setObject:responseObject forKey:@"data"];
-		[dictionary setObject:operation.response.allHeaderFields forKey:@"headers"];
+		[dictionary setObject:[self headersFromTask:task] forKey:@"headers"];
 		CDVPluginResult *pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary:dictionary];
 		[weakSelf.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
-	} failure:^(AFHTTPRequestOperation *operation, NSError *error) {
+	} failure:^(NSURLSessionDataTask *task, NSError *error) {
 		NSMutableDictionary *dictionary = [NSMutableDictionary dictionary];
-		[dictionary setObject:[NSNumber numberWithInt:operation.response.statusCode] forKey:@"status"];
+		[dictionary setObject:[self statusCodeFromTask:task] forKey:@"status"];
 		@try {
-			[dictionary setObject:[operation responseObject] forKey:@"error"];
+			[dictionary setObject:[self errorBodyFromError:error] forKey:@"error"];
 		}
 		@catch (NSException *exception) {
 			[dictionary setObject:[error localizedDescription] forKey:@"error"];
@@ -135,18 +170,18 @@
         parameters = nil;
     }
    
-	[manager GET:url parameters:parameters success:^(AFHTTPRequestOperation *operation, id responseObject) {
+	[manager GET:url parameters:parameters success:^(NSURLSessionDataTask *task, id responseObject) {
 		NSMutableDictionary *dictionary = [NSMutableDictionary dictionary];
-		[dictionary setObject:[NSNumber numberWithInt:operation.response.statusCode] forKey:@"status"];
+		[dictionary setObject:[self statusCodeFromTask:task] forKey:@"status"];
 		[dictionary setObject:responseObject forKey:@"data"];
-		[dictionary setObject:operation.response.allHeaderFields forKey:@"headers"];
+		[dictionary setObject:[self headersFromTask:task] forKey:@"headers"];
 		CDVPluginResult *pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary:dictionary];
 		[weakSelf.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
-	} failure:^(AFHTTPRequestOperation *operation, NSError *error) {
+	} failure:^(NSURLSessionDataTask *task, NSError *error) {
 		NSMutableDictionary *dictionary = [NSMutableDictionary dictionary];
-		[dictionary setObject:[NSNumber numberWithInt:operation.response.statusCode] forKey:@"status"];
+		[dictionary setObject:[self statusCodeFromTask:task] forKey:@"status"];
 		@try {
-			[dictionary setObject:[operation responseObject] forKey:@"error"];
+			[dictionary setObject:[self errorBodyFromError:error] forKey:@"error"];
 		}
 		@catch (NSException *exception) {
 			[dictionary setObject:[error localizedDescription] forKey:@"error"];
@@ -178,18 +213,18 @@
         parameters = nil;
     }
 
-	[manager PUT:url parameters:parameters success:^(AFHTTPRequestOperation *operation, id responseObject) {
+	[manager PUT:url parameters:parameters success:^(NSURLSessionDataTask *task, id responseObject) {
 		NSMutableDictionary *dictionary = [NSMutableDictionary dictionary];
-		[dictionary setObject:[NSNumber numberWithInt:operation.response.statusCode] forKey:@"status"];
+		[dictionary setObject:[self statusCodeFromTask:task] forKey:@"status"];
 		[dictionary setObject:responseObject forKey:@"data"];
-		[dictionary setObject:operation.response.allHeaderFields forKey:@"headers"];
+		[dictionary setObject:[self headersFromTask:task] forKey:@"headers"];
 		CDVPluginResult *pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary:dictionary];
 		[weakSelf.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
-	} failure:^(AFHTTPRequestOperation *operation, NSError *error) {
+	} failure:^(NSURLSessionDataTask *task, NSError *error) {
 		NSMutableDictionary *dictionary = [NSMutableDictionary dictionary];
-		[dictionary setObject:[NSNumber numberWithInt:operation.response.statusCode] forKey:@"status"];
+		[dictionary setObject:[self statusCodeFromTask:task] forKey:@"status"];
 		@try {
-			[dictionary setObject:[operation responseObject] forKey:@"error"];
+			[dictionary setObject:[self errorBodyFromError:error] forKey:@"error"];
 		}
 		@catch (NSException *exception) {
 			[dictionary setObject:[error localizedDescription] forKey:@"error"];
@@ -223,18 +258,18 @@
         parameters = nil;
     }
 
-	[manager DELETE:url parameters:parameters success:^(AFHTTPRequestOperation *operation, id responseObject) {
+	[manager DELETE:url parameters:parameters success:^(NSURLSessionDataTask *task, id responseObject) {
 		NSMutableDictionary *dictionary = [NSMutableDictionary dictionary];
-		[dictionary setObject:[NSNumber numberWithInt:operation.response.statusCode] forKey:@"status"];
+		[dictionary setObject:[self statusCodeFromTask:task] forKey:@"status"];
 		[dictionary setObject:responseObject forKey:@"data"];
-		[dictionary setObject:operation.response.allHeaderFields forKey:@"headers"];
+		[dictionary setObject:[self headersFromTask:task] forKey:@"headers"];
 		CDVPluginResult *pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary:dictionary];
 		[weakSelf.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
-	} failure:^(AFHTTPRequestOperation *operation, NSError *error) {
+	} failure:^(NSURLSessionDataTask *task, NSError *error) {
 		NSMutableDictionary *dictionary = [NSMutableDictionary dictionary];
-		[dictionary setObject:[NSNumber numberWithInt:operation.response.statusCode] forKey:@"status"];
+		[dictionary setObject:[self statusCodeFromTask:task] forKey:@"status"];
 		@try {
-			[dictionary setObject:[operation responseObject] forKey:@"error"];
+			[dictionary setObject:[self errorBodyFromError:error] forKey:@"error"];
 		}
 		@catch (NSException *exception) {
 			[dictionary setObject:[error localizedDescription] forKey:@"error"];
@@ -283,18 +318,18 @@
             [weakSelf.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
             return;
         }
-    } success:^(AFHTTPRequestOperation *operation, id responseObject) {
+    } success:^(NSURLSessionDataTask *task, id responseObject) {
         NSMutableDictionary *dictionary = [NSMutableDictionary dictionary];
-        [dictionary setObject:[NSNumber numberWithInt:operation.response.statusCode] forKey:@"status"];
+        [dictionary setObject:[self statusCodeFromTask:task] forKey:@"status"];
 		[dictionary setObject:responseObject forKey:@"data"];
-		[dictionary setObject:operation.response.allHeaderFields forKey:@"headers"];
+		[dictionary setObject:[self headersFromTask:task] forKey:@"headers"];
         CDVPluginResult *pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary:dictionary];
         [weakSelf.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
-    } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
+    } failure:^(NSURLSessionDataTask *task, NSError *error) {
         NSMutableDictionary *dictionary = [NSMutableDictionary dictionary];
-        [dictionary setObject:[NSNumber numberWithInt:operation.response.statusCode] forKey:@"status"];
+        [dictionary setObject:[self statusCodeFromTask:task] forKey:@"status"];
         @try {
-           [dictionary setObject:[operation responseObject] forKey:@"error"];
+           [dictionary setObject:[self errorBodyFromError:error] forKey:@"error"];
 		}
 		@catch (NSException *exception) {
            [dictionary setObject:[error localizedDescription] forKey:@"error"];
@@ -328,7 +363,7 @@
         parameters = nil;
     }
     
-    [manager GET:url parameters:parameters success:^(AFHTTPRequestOperation *operation, id responseObject) {
+    [manager GET:url parameters:parameters success:^(NSURLSessionDataTask *task, id responseObject) {
         /*
          *
          * Licensed to the Apache Software Foundation (ASF) under one
@@ -380,15 +415,15 @@
    
         CDVFile *file = [[CDVFile alloc] init];
         NSMutableDictionary *dictionary = [NSMutableDictionary dictionary];
-        [dictionary setObject:[NSNumber numberWithInt:operation.response.statusCode] forKey:@"status"];
+        [dictionary setObject:[self statusCodeFromTask:task] forKey:@"status"];
         [dictionary setObject:[file getDirectoryEntry:filePath isDirectory:NO] forKey:@"file"];
         CDVPluginResult *pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary:dictionary];
         [weakSelf.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
-    } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
+    } failure:^(NSURLSessionDataTask *task, NSError *error) {
         NSMutableDictionary *dictionary = [NSMutableDictionary dictionary];
-        [dictionary setObject:[NSNumber numberWithInt:operation.response.statusCode] forKey:@"status"];
+        [dictionary setObject:[self statusCodeFromTask:task] forKey:@"status"];
         @try {
-           [dictionary setObject:[operation responseObject] forKey:@"error"];
+           [dictionary setObject:[self errorBodyFromError:error] forKey:@"error"];
 		}
 		@catch (NSException *exception) {
            [dictionary setObject:[error localizedDescription] forKey:@"error"];

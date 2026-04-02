@@ -42,7 +42,7 @@
                 <source url="https://cdn.cocoapods.org/" />
             </config>
             <pods>
-                <pod name="AFNetworking" spec="~> 3.2.1" />
+                <pod name="AFNetworking" spec="~> 4.0" />
             </pods>
         </podspec> 
 

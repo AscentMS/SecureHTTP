@@ -21,7 +21,7 @@
 #import <Foundation/Foundation.h>
 #import <AFNetworking/AFNetworking.h>
 
-@interface HttpManager : AFHTTPRequestOperationManager 
+@interface HttpManager : AFHTTPSessionManager
 
 + (instancetype)sharedClient;
 
