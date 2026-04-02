@@ -82,6 +82,15 @@
 	manager.responseSerializer = [TextResponseSerializer serializer];
 
 	[self setRequestHeaders: headers];
+
+	// Sanitize parameters before AFNetworking call
+    if ([parameters isKindOfClass:[NSNull class]] || parameters == nil) {
+		// If NSBull is passed, make it nil
+        parameters = nil;
+    } else if ([parameters count] == 0) {
+		// If an object is passed with no entries, make it nil
+        parameters = nil;
+    }
    
 	[manager POST:url parameters:parameters success:^(AFHTTPRequestOperation *operation, id responseObject) {
 		NSMutableDictionary *dictionary = [NSMutableDictionary dictionary];
@@ -116,6 +125,15 @@
 	manager.responseSerializer = [TextResponseSerializer serializer];
 
 	[self setRequestHeaders: headers];
+
+	// Sanitize parameters before AFNetworking call
+    if ([parameters isKindOfClass:[NSNull class]] || parameters == nil) {
+		// If NSBull is passed, make it nil
+        parameters = nil;
+    } else if ([parameters count] == 0) {
+		// If an object is passed with no entries, make it nil
+        parameters = nil;
+    }
    
 	[manager GET:url parameters:parameters success:^(AFHTTPRequestOperation *operation, id responseObject) {
 		NSMutableDictionary *dictionary = [NSMutableDictionary dictionary];
@@ -150,6 +168,15 @@
 	manager.responseSerializer = [TextResponseSerializer serializer];
 
 	[self setRequestHeaders: headers];
+
+	// Sanitize parameters before AFNetworking call
+    if ([parameters isKindOfClass:[NSNull class]] || parameters == nil) {
+		// If NSBull is passed, make it nil
+        parameters = nil;
+    } else if ([parameters count] == 0) {
+		// If an object is passed with no entries, make it nil
+        parameters = nil;
+    }
 
 	[manager PUT:url parameters:parameters success:^(AFHTTPRequestOperation *operation, id responseObject) {
 		NSMutableDictionary *dictionary = [NSMutableDictionary dictionary];
@@ -186,6 +213,15 @@
 	manager.requestSerializer.HTTPMethodsEncodingParametersInURI = [NSSet setWithObjects:@"GET", @"HEAD", nil];
 
 	[self setRequestHeaders: headers];
+
+	// Sanitize parameters before AFNetworking call
+    if ([parameters isKindOfClass:[NSNull class]] || parameters == nil) {
+		// If NSBull is passed, make it nil
+        parameters = nil;
+    } else if ([parameters count] == 0) {
+		// If an object is passed with no entries, make it nil
+        parameters = nil;
+    }
 
 	[manager DELETE:url parameters:parameters success:^(AFHTTPRequestOperation *operation, id responseObject) {
 		NSMutableDictionary *dictionary = [NSMutableDictionary dictionary];
@@ -226,6 +262,15 @@
 	manager.responseSerializer = [TextResponseSerializer serializer];
 
 	[self setRequestHeaders: headers];
+
+	// Sanitize parameters before AFNetworking call
+    if ([parameters isKindOfClass:[NSNull class]] || parameters == nil) {
+		// If NSBull is passed, make it nil
+        parameters = nil;
+    } else if ([parameters count] == 0) {
+		// If an object is passed with no entries, make it nil
+        parameters = nil;
+    }
 
     [manager POST:url parameters:parameters constructingBodyWithBlock:^(id<AFMultipartFormData> formData) {
         NSError *error;
@@ -273,6 +318,15 @@
 	manager.responseSerializer = [AFHTTPResponseSerializer serializer];
 
     [self setRequestHeaders: headers];
+
+	// Sanitize parameters before AFNetworking call
+    if ([parameters isKindOfClass:[NSNull class]] || parameters == nil) {
+		// If NSBull is passed, make it nil
+        parameters = nil;
+    } else if ([parameters count] == 0) {
+		// If an object is passed with no entries, make it nil
+        parameters = nil;
+    }
     
     [manager GET:url parameters:parameters success:^(AFHTTPRequestOperation *operation, id responseObject) {
         /*
