@@ -26,7 +26,13 @@
     static HttpManager *_sharedClient = nil;
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
-        _sharedClient = [HttpManager manager];
+        // AFNetworking 4 throws an "Invalid Security Policy" exception when
+        // certificate pinning is enabled on a manager without an https baseURL.
+        // Requests in this plugin are sent with absolute URLs, so this secure
+        // placeholder baseURL satisfies AFNetworking's guard without altering
+        // request routing.
+        NSURL *secureBaseURL = [NSURL URLWithString:@"https://localhost/"];
+        _sharedClient = [[HttpManager alloc] initWithBaseURL:secureBaseURL];
     });
     
     return _sharedClient;
