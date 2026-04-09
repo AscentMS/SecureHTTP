@@ -18,6 +18,7 @@
 
     <js-module src="www/cordovaHTTP.js" name="CordovaHttpPlugin">
         <clobbers target="plugins.CordovaHttpPlugin" />
+        <clobbers target="cordovaHTTP" />
     </js-module>
 
     <!-- ios -->
