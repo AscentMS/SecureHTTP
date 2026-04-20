@@ -10,6 +10,7 @@
 - (NSNumber*)statusCodeFromTask:(NSURLSessionTask*)task;
 - (NSDictionary*)headersFromTask:(NSURLSessionTask*)task;
 - (id)errorBodyFromError:(NSError*)error;
+- (NSSet*)pinnedCertificatesFromMainBundle;
 
 @end
 
@@ -61,6 +62,21 @@
     return nil;
 }
 
+- (NSSet*)pinnedCertificatesFromMainBundle {
+    NSBundle *mainBundle = [NSBundle mainBundle];
+    NSMutableSet *pinnedCertificates = [NSMutableSet setWithSet:[AFSecurityPolicy certificatesInBundle:mainBundle]];
+    NSArray *wwwCertificatePaths = [mainBundle pathsForResourcesOfType:@"cer" inDirectory:@"www/certificates"];
+
+    for (NSString *certificatePath in wwwCertificatePaths) {
+        NSData *certificateData = [NSData dataWithContentsOfFile:certificatePath];
+        if (certificateData) {
+            [pinnedCertificates addObject:certificateData];
+        }
+    }
+
+    return [NSSet setWithSet:pinnedCertificates];
+}
+
 - (void)useBasicAuth:(CDVInvokedUrlCommand*)command {
     NSString *username = [command.arguments objectAtIndex:0];
     NSString *password = [command.arguments objectAtIndex:1];
@@ -85,7 +101,8 @@
 	bool enable = [[command.arguments objectAtIndex:0] boolValue];
 
     if (enable) {
-        [HttpManager sharedClient].securityPolicy = [AFSecurityPolicy policyWithPinningMode:AFSSLPinningModeCertificate];
+        NSSet *pinnedCertificates = [self pinnedCertificatesFromMainBundle];
+        [HttpManager sharedClient].securityPolicy = [AFSecurityPolicy policyWithPinningMode:AFSSLPinningModeCertificate withPinnedCertificates:pinnedCertificates];
     } else {
         [HttpManager sharedClient].securityPolicy = [AFSecurityPolicy policyWithPinningMode:AFSSLPinningModeNone];
     }
