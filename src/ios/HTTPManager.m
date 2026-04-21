@@ -32,7 +32,16 @@
         // placeholder baseURL satisfies AFNetworking's guard without altering
         // request routing.
         NSURL *secureBaseURL = [NSURL URLWithString:@"https://localhost/"];
-        _sharedClient = [[HttpManager alloc] initWithBaseURL:secureBaseURL];
+        // Keep plugin HTTP behaviour stateless like Android: no shared cookies
+        // and no cached responses across login sessions.
+        NSURLSessionConfiguration *configuration = [NSURLSessionConfiguration defaultSessionConfiguration];
+        configuration.HTTPCookieAcceptPolicy = NSHTTPCookieAcceptPolicyNever;
+        configuration.HTTPCookieStorage = nil;
+        configuration.HTTPShouldSetCookies = NO;
+        configuration.URLCache = nil;
+        configuration.requestCachePolicy = NSURLRequestReloadIgnoringLocalCacheData;
+
+        _sharedClient = [[HttpManager alloc] initWithBaseURL:secureBaseURL sessionConfiguration:configuration];
     });
     
     return _sharedClient;
